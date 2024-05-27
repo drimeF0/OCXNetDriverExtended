@@ -368,7 +368,7 @@ public class EnvironmentXnetController extends AbstractManagedEnvironment implem
             return new Object[] {null, "this target dont have so much slots"};
         }
 
-        ItemStack returnStackSim = targetHandler.insertItem(targetSlot, sourceStackSim, true);
+        ItemStack returnStackSim = targetHandler.insertItem(targetSlot-1, sourceStackSim, true);
 
         int transferrableAmount = amount;
         if(returnStackSim != null && !returnStackSim.isEmpty()) {
@@ -377,7 +377,7 @@ public class EnvironmentXnetController extends AbstractManagedEnvironment implem
 
         if(transferrableAmount > 0) {
             ItemStack sourceStackReal = handler.extractItem(slot-1, transferrableAmount, false);
-            targetHandler.insertItem(targetSlot, sourceStackReal, false);
+            targetHandler.insertItem(targetSlot-1, sourceStackReal, false);
 
             return new Object[]{ transferrableAmount };
         }

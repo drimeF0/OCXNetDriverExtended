@@ -29,7 +29,9 @@ public class ConverterBlockPos implements Converter {
         if(!map.containsKey("z")) {
             throw new IllegalArgumentException("Missing z value in table");
         }
-
-        return new BlockPos((double)map.get("x"), (double)map.get("y"), (double)map.get("z"));
+        double x = (double)((long)map.get("x"));
+        double y = (double)((long)map.get("y"));
+        double z = (double)((long)map.get("z"));
+        return new BlockPos(x, y, z);
     }
 }
