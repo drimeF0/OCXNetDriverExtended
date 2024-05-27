@@ -20,13 +20,13 @@ public class ConverterBlockPos implements Converter {
 
     public static BlockPos checkBlockPos(Arguments args, int index) {
         Map<String, Object> map = args.checkTable(index);
-        if(!map.containsKey("x") || !(map.get("x") instanceof Double)) {
+        if(!map.containsKey("x")) {
             throw new IllegalArgumentException("Missing x value in table");
         }
-        if(!map.containsKey("y") || !(map.get("y") instanceof Double)) {
+        if(!map.containsKey("y")) {
             throw new IllegalArgumentException("Missing y value in table");
         }
-        if(!map.containsKey("z") || !(map.get("z") instanceof Double)) {
+        if(!map.containsKey("z")) {
             throw new IllegalArgumentException("Missing z value in table");
         }
 

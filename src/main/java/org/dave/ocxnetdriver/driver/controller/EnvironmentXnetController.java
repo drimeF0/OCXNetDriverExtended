@@ -70,6 +70,26 @@ public class EnvironmentXnetController extends AbstractManagedEnvironment implem
                 .orElse(null);
     }
 
+    private static boolean canItemStacksStackRelaxed(ItemStack a, ItemStack b) //copy-pasted from MinecraftForge-master/MinecraftForge-1.11.x/src/main/java/net/minecraftforge/items/ItemHandlerHelper.java
+    {
+        if (a.isEmpty() || b.isEmpty() || a.getItem() != b.getItem())
+            return false;
+
+        if (!a.isStackable())
+            return false;
+
+        // Metadata value only matters when the item has subtypes
+        // Vanilla stacks non-subtype items with different metadata together
+        // e.g. a stick with metadata 0 and a stick with metadata 1 stack
+        if (a.getHasSubtypes() && a.getMetadata() != b.getMetadata())
+            return false;
+
+        if (a.hasTagCompound() != b.hasTagCompound())
+            return false;
+
+        return (!a.hasTagCompound() || a.getTagCompound().equals(b.getTagCompound())) && a.areCapsCompatible(b);
+    }
+
     @Callback(doc = "function(sourcePos:table, amount:number, targetPos:table[, sourceSide:number[, targetSide:number]]):number -- Transfer energy between two energy handlers")
     public Object[] transferEnergy(final Context context, final Arguments args) {
         BlockPos pos = toAbsolute(ConverterBlockPos.checkBlockPos(args, 0));
@@ -294,7 +314,7 @@ public class EnvironmentXnetController extends AbstractManagedEnvironment implem
         return new Object[]{ result };
     }
 
-    @Callback(doc = "function(sourcePos:table, sourceSlot:number, amount:number, targetPos:table[, sourceSide:number[, targetSide:number]]):number -- Transfer items between two inventories")
+    @Callback(doc = "function(sourcePos:table, sourceSlot:number, amount:number, targetPos:table, targetSlot:number[, sourceSide:number[, targetSide:number]]):number -- Transfer items between two inventories")
     public Object[] transferItem(final Context context, final Arguments args) {
         BlockPos pos = toAbsolute(ConverterBlockPos.checkBlockPos(args, 0));
         SidedPos sidedPos = getSidedPos(pos);
@@ -307,14 +327,15 @@ public class EnvironmentXnetController extends AbstractManagedEnvironment implem
         int amount = args.checkInteger(2);
 
         BlockPos targetPos = toAbsolute(ConverterBlockPos.checkBlockPos(args, 3));
+        int targetSlot = args.checkInteger(4);
         SidedPos targetSidedPos = getSidedPos(targetPos);
 
         if(targetSidedPos == null) {
             return new Object[]{ null, "given target position is not connected to the network" };
         }
 
-        EnumFacing side = EnumFacing.getFront(args.optInteger(4, sidedPos.getSide().getIndex()));
-        EnumFacing targetSide = EnumFacing.getFront(args.optInteger(5, targetSidedPos.getSide().getIndex()));
+        EnumFacing side = EnumFacing.getFront(args.optInteger(5, sidedPos.getSide().getIndex()));
+        EnumFacing targetSide = EnumFacing.getFront(args.optInteger(6, targetSidedPos.getSide().getIndex()));
 
 
         TileEntity tileEntity = controllerWorld.getTileEntity(pos);
@@ -343,7 +364,11 @@ public class EnvironmentXnetController extends AbstractManagedEnvironment implem
             return new Object[]{ null, "can not extract from source slot" };
         }
 
-        ItemStack returnStackSim = ItemHandlerHelper.insertItemStacked(targetHandler, sourceStackSim, true);
+        if(targetSlot > targetHandler.getSlots()) {
+            return new Object[] {null, "this target dont have so much slots"};
+        }
+
+        ItemStack returnStackSim = targetHandler.insertItem(targetSlot, sourceStackSim, true);
 
         int transferrableAmount = amount;
         if(returnStackSim != null && !returnStackSim.isEmpty()) {
@@ -352,7 +377,7 @@ public class EnvironmentXnetController extends AbstractManagedEnvironment implem
 
         if(transferrableAmount > 0) {
             ItemStack sourceStackReal = handler.extractItem(slot-1, transferrableAmount, false);
-            ItemHandlerHelper.insertItemStacked(targetHandler, sourceStackReal, false);
+            targetHandler.insertItem(targetSlot, sourceStackReal, false);
 
             return new Object[]{ transferrableAmount };
         }
