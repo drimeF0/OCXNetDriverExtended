@@ -1,13 +1,13 @@
 [
 {
   "modid": "ocxnetdriver",
-  "name": "OpenComputers Xnet Driver",
+  "name": "OpenComputers Xnet Driver Extended edition",
   "description": "Programmable logistics over Xnet Networks",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["Davenonymous"],
+  "authorList": ["original mod: Davenonymous","extended by: drime"],
   "credits": "",
   "logoFile": "",
   "screenshots": [],
